@@ -91,7 +91,7 @@ def get_us_news():
     
     news = []
     for item in news_items:
-        title = item.text.strip()
+        title = item.find('h3').text.strip()
         link = item.find('a')['href']
         if not link.startswith('http'):
             link = "https://finance.yahoo.com" + link

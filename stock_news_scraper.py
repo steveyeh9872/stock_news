@@ -31,8 +31,11 @@ def get_tw_stock_info():
         # 獲取漲跌幅
         previous_close = data['chart']['result'][0]['meta']['chartPreviousClose']
         change_percent = (price - previous_close) / previous_close * 100
+
+        # 設定漲跌顏色
+        color = "red" if change_percent >= 0 else "green"
         
-        return f"<strong>台灣加權指數</strong>: {price:.2f} ({change_percent:+.2f}%)"
+        return f"<strong>台灣加權指數</strong>: {price:.2f} (<span style='color:{color};'>{change_percent:+.2f}%</span>)"
     except Exception as e:
         print(f"無法獲取台灣加權指數信息: {e}")
         return "<strong>台灣加權指數</strong>: 無法獲取數據"
@@ -54,8 +57,11 @@ def get_us_stock_info():
         # 獲取漲跌幅
         previous_close = data['chart']['result'][0]['meta']['chartPreviousClose']
         change_percent = (price - previous_close) / previous_close * 100
+
+        # 設定漲跌顏色
+        color = "red" if change_percent >= 0 else "green"
         
-        return f"<strong>S&P 500指數</strong>: {price:.2f} ({change_percent:+.2f}%)"
+        return f"<strong>S&P 500指數</strong>: {price:.2f} (<span style='color:{color};'>{change_percent:+.2f}%</span>)"
     except Exception as e:
         print(f"無法獲取S&P 500指數信息: {e}")
         return "<strong>S&P 500指數</strong>: 無法獲取數據"
@@ -88,12 +94,7 @@ def get_us_news():
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # 嘗試不同的選擇器
-        news_items = soup.find_all('h3', {'class': 'Mb(5px)'})
-        if not news_items:
-            news_items = soup.find_all('h3', {'class': 'Mx(0) Mb(4px)'})
-        if not news_items:
-            news_items = soup.select('li.js-stream-content h3')
-        
+        news_items = soup.select('h3 > a')
         if not news_items:
             print("無法找到新聞項目。HTML結構:")
             print(soup.prettify()[:1000])  # 打印前1000個字符的HTML，用於調試
@@ -102,7 +103,7 @@ def get_us_news():
         news = []
         for item in news_items[:5]:  # 只獲取前5條新聞
             title = item.text.strip()
-            link = item.find('a')['href'] if item.find('a') else ""
+            link = item['href'] if item else ""
             if link and not link.startswith('http'):
                 link = "https://finance.yahoo.com" + link
             short_link = shorten_url(link)

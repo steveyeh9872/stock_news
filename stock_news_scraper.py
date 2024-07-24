@@ -2,7 +2,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import smtplib
-import time
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -15,36 +15,49 @@ def shorten_url(url):
         return url  # 如果縮短失敗，返回原始URL
 
 def get_tw_stock_info():
-    url = "https://tw.stock.yahoo.com/quote/^TWII"
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
     
     try:
-        index = soup.find('span', {'class': 'Fz(32px)'}).text.strip()
-        change = soup.find('span', {'class': 'Fz(20px)'}).text.strip()
-        return f"<strong>台灣加權指數</strong>: {index} ({change})"
-    except AttributeError as e:
-        print(f"無法找到台灣加權指數信息: {e}")
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = json.loads(response.text)
+        
+        # 獲取最新的收盤價
+        price = data['chart']['result'][0]['meta']['regularMarketPrice']
+        
+        # 獲取漲跌幅
+        previous_close = data['chart']['result'][0]['meta']['chartPreviousClose']
+        change_percent = (price - previous_close) / previous_close * 100
+        
+        return f"<strong>台灣加權指數</strong>: {price:.2f} ({change_percent:+.2f}%)"
+    except Exception as e:
+        print(f"無法獲取台灣加權指數信息: {e}")
         return "<strong>台灣加權指數</strong>: 無法獲取數據"
 
 def get_us_stock_info():
-    url = "https://finance.yahoo.com/quote/%5EGSPC"
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
     
     try:
-        index = soup.find('fin-streamer', {'data-symbol': '^GSPC'}).text.strip()
-        change = soup.find('fin-streamer', {'data-field': 'regularMarketChangePercent'}).text.strip()
-        return f"<strong>S&P 500指數</strong>: {index} ({change})"
-    except AttributeError as e:
-        print(f"無法找到S&P 500指數信息: {e}")
-        print(soup.prettify()[:1000])  # 打印前1000個字符的HTML，用於調試
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = json.loads(response.text)
+        
+        # 獲取最新的收盤價
+        price = data['chart']['result'][0]['meta']['regularMarketPrice']
+        
+        # 獲取漲跌幅
+        previous_close = data['chart']['result'][0]['meta']['chartPreviousClose']
+        change_percent = (price - previous_close) / previous_close * 100
+        
+        return f"<strong>S&P 500指數</strong>: {price:.2f} ({change_percent:+.2f}%)"
+    except Exception as e:
+        print(f"無法獲取S&P 500指數信息: {e}")
         return "<strong>S&P 500指數</strong>: 無法獲取數據"
 
 def get_tw_news():

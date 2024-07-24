@@ -67,7 +67,7 @@ def get_us_stock_info():
         return "<strong>S&P 500指數</strong>: 無法獲取數據"
 
 def get_tw_news():
-    url = "https://tw.stock.yahoo.com/news"
+    url = "https://tw.stock.yahoo.com/tw-market/"
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     
@@ -83,7 +83,7 @@ def get_tw_news():
     return "\n".join(news) if news else "無法獲取台股新聞"
 
 def get_us_news():
-    url = "https://finance.yahoo.com/news"
+    url = "https://finance.yahoo.com/topic/stock-market-news/"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
@@ -94,7 +94,7 @@ def get_us_news():
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # 更新選擇器以匹配提供的 HTML 結構
-        news_items = soup.select('div.content a.subtle-link')
+        news_items = soup.select('h3 > a')
         if not news_items:
             print("無法找到新聞項目。HTML結構:")
             print(soup.prettify()[:1000])  # 打印前1000個字符的HTML，用於調試

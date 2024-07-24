@@ -14,23 +14,35 @@ from datetime import datetime
 
 def get_tw_stock_info():
     url = "https://tw.stock.yahoo.com/quote/^TWII"
-    response = requests.get(url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    index = soup.find('span', {'class': 'Fz(32px)'}).text
-    change = soup.find('span', {'class': 'Fz(20px)'}).text
-    
-    return f"台灣加權指數: {index} ({change})"
+    try:
+        index = soup.find('span', {'class': 'Fz(32px)'}).text
+        change = soup.find('span', {'class': 'Fz(20px)'}).text
+        return f"台灣加權指數: {index} ({change})"
+    except AttributeError:
+        print("無法找到台灣加權指數信息。網頁結構可能已改變。")
+        return "台灣加權指數: 無法獲取數據"
 
 def get_us_stock_info():
     url = "https://finance.yahoo.com/quote/%5EGSPC"
-    response = requests.get(url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    index = soup.find('fin-streamer', {'class': 'Fw(b) Fz(36px)'}).text
-    change = soup.find('fin-streamer', {'class': 'Fw(500) Pstart(8px) Fz(24px)'}).text
-    
-    return f"S&P 500指數: {index} ({change})"
+    try:
+        index = soup.find('fin-streamer', {'data-symbol': '^GSPC'}).text
+        change = soup.find('fin-streamer', {'data-field': 'regularMarketChangePercent'}).text
+        return f"S&P 500指數: {index} ({change})"
+    except AttributeError:
+        print("無法找到S&P 500指數信息。網頁結構可能已改變。")
+        return "S&P 500指數: 無法獲取數據"
 
 def get_tw_news():
     url = "https://tw.stock.yahoo.com/news"

@@ -87,36 +87,21 @@ def get_us_news():
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
     
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # 更新選擇器以匹配提供的 HTML 結構
-        news_items = soup.select('h3 > a')
-        if not news_items:
-            print("無法找到新聞項目。HTML結構:")
-            print(soup.prettify()[:1000])  # 打印前1000個字符的HTML，用於調試
-            return "無法獲取美股新聞，請檢查網站結構是否變化"
-        
-        news = []
-        for item in news_items[:5]:  # 只獲取前5條新聞
-            title = item['title']
-            link = item['href']
-            if link and not link.startswith('http'):
-                link = "https://finance.yahoo.com" + link
-            short_link = shorten_url(link)
-            news.append(f"{title}\n{short_link}\n")
-        
-        return "\n".join(news) if news else "無法獲取美股新聞"
+    news_items = soup.find_all('h3', {'class': 'Mb(5px)'})[:5]  # 獲取前5條新聞
     
-    except requests.RequestException as e:
-        print(f"請求錯誤: {e}")
-        return f"獲取美股新聞時發生錯誤: {str(e)}"
-    except Exception as e:
-        print(f"未預期的錯誤: {e}")
-        return f"處理美股新聞時發生未知錯誤: {str(e)}"
+    news = []
+    for item in news_items:
+        title = item.text.strip()
+        link = item.find('a')['href']
+        if not link.startswith('http'):
+            link = "https://finance.yahoo.com" + link
+        short_link = shorten_url(link)
+        news.append(f"{title}\n{short_link}\n")
+    
+    return "\n".join(news) if news else "無法獲取美股新聞"
 
 def send_email(content):
     sender_email = os.environ['SENDER_EMAIL']

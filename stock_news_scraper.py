@@ -90,12 +90,13 @@ def get_us_news():
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    news_items = soup.find_all('h3', {'class': 'Mb(5px)'})[:5]  # 獲取前5條新聞
+    # 使用新的選擇器來匹配包含新聞的 a 標籤
+    news_items = soup.select('h3 a')[:5]
     
     news = []
     for item in news_items:
         title = item.text.strip()
-        link = item.find('a')['href']
+        link = item['href']
         if not link.startswith('http'):
             link = "https://finance.yahoo.com" + link
         short_link = shorten_url(link)

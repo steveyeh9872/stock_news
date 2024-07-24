@@ -84,19 +84,15 @@ def get_tw_news():
 
 def get_us_news():
     url = "https://finance.yahoo.com/topic/stock-market-news/"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    response = requests.get(url, headers=headers)
+    response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    # 使用新的選擇器來匹配包含新聞的 a 標籤
-    news_items = soup.select('h3 a')[:5]
+    news_items = soup.find_all('div', {'class': 'Py(14px)'})[:5]  # 獲取前5條新聞
     
     news = []
     for item in news_items:
         title = item.text.strip()
-        link = item['href']
+        link = item.find('a')['href']
         if not link.startswith('http'):
             link = "https://finance.yahoo.com" + link
         short_link = shorten_url(link)

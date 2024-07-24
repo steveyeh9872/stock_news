@@ -7,11 +7,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
-# 在 send_email 函數中
-sender_email = os.environ['SENDER_EMAIL']
-receiver_email = os.environ['RECEIVER_EMAIL']
-password = os.environ['EMAIL_PASSWORD']
-
 def shorten_url(url):
     try:
         response = requests.get(f"http://tinyurl.com/api-create.php?url={url}")
@@ -30,10 +25,10 @@ def get_tw_stock_info():
     try:
         index = soup.find('span', {'class': 'Fz(32px)'}).text.strip()
         change = soup.find('span', {'class': 'Fz(20px)'}).text.strip()
-        return f"**台灣加權指數**: {index} ({change})"
+        return f"<strong>台灣加權指數</strong>: {index} ({change})"
     except AttributeError as e:
         print(f"無法找到台灣加權指數信息: {e}")
-        return "**台灣加權指數**: 無法獲取數據"
+        return "<strong>台灣加權指數</strong>: 無法獲取數據"
 
 def get_us_stock_info():
     url = "https://finance.yahoo.com/quote/%5EGSPC"
@@ -46,11 +41,11 @@ def get_us_stock_info():
     try:
         index = soup.find('fin-streamer', {'data-symbol': '^GSPC'}).text.strip()
         change = soup.find('fin-streamer', {'data-field': 'regularMarketChangePercent'}).text.strip()
-        return f"**S&P 500指數**: {index} ({change})"
+        return f"<strong>S&P 500指數</strong>: {index} ({change})"
     except AttributeError as e:
         print(f"無法找到S&P 500指數信息: {e}")
         print(soup.prettify()[:1000])  # 打印前1000個字符的HTML，用於調試
-        return "**S&P 500指數**: 無法獲取數據"
+        return "<strong>S&P 500指數</strong>: 無法獲取數據"
 
 def get_tw_news():
     url = "https://tw.stock.yahoo.com/news"
@@ -110,47 +105,69 @@ def get_us_news():
         return f"處理美股新聞時發生未知錯誤: {str(e)}"
 
 def send_email(content):
-    message = MIMEMultipart()
+    sender_email = os.environ['SENDER_EMAIL']
+    receiver_email = os.environ['RECEIVER_EMAIL']
+    password = os.environ['EMAIL_PASSWORD']
+
+    message = MIMEMultipart("alternative")
+    message["Subject"] = f"每日股市資訊與新聞 - {datetime.now().strftime('%Y-%m-%d')}"
     message["From"] = sender_email
     message["To"] = receiver_email
-    message["Subject"] = f"每日股市資訊與新聞 - {datetime.now().strftime('%Y-%m-%d')}"
 
-    message.attach(MIMEText(content, "plain"))
+    # 轉換純文本內容為HTML
+    html = f"""\
+    <html>
+      <body>
+        {content}
+      </body>
+    </html>
+    """
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(sender_email, password)
-        server.send_message(message)
+    part = MIMEText(html, "html")
+    message.attach(part)
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
 def main():
-    content = "今日股市資訊與新聞:\n\n"
+    content = "<h2>今日股市資訊與新聞:</h2>"
 
     try:
         tw_info = get_tw_stock_info()
-        content += f"{tw_info}\n\n"
+        content += f"<p>{tw_info}</p>"
     except Exception as e:
         print(f"獲取台股資訊時出錯: {e}")
-        content += "**台灣加權指數**: 獲取資訊失敗\n\n"
+        content += "<p><strong>台灣加權指數</strong>: 獲取資訊失敗</p>"
 
     try:
         us_info = get_us_stock_info()
-        content += f"{us_info}\n\n"
+        content += f"<p>{us_info}</p>"
     except Exception as e:
         print(f"獲取美股資訊時出錯: {e}")
-        content += "**S&P 500指數**: 獲取資訊失敗\n\n"
+        content += "<p><strong>S&P 500指數</strong>: 獲取資訊失敗</p>"
 
-    content += "台股熱門新聞:\n"
+    content += "<h3>台股熱門新聞:</h3>"
     try:
-        content += get_tw_news() + "\n\n"
+        tw_news = get_tw_news()
+        content += f"<p>{tw_news.replace('\n', '<br>')}</p>"
     except Exception as e:
-        content += f"獲取台股新聞時出錯: {str(e)}\n\n"
+        print(f"獲取台股新聞時出錯: {e}")
+        content += "<p>獲取台股新聞失敗</p>"
 
-    content += "美股熱門新聞:\n"
+    content += "<h3>美股熱門新聞:</h3>"
     try:
-        content += get_us_news() + "\n\n"
+        us_news = get_us_news()
+        content += f"<p>{us_news.replace('\n', '<br>')}</p>"
     except Exception as e:
-        content += f"獲取美股新聞時出錯: {str(e)}\n\n"
+        print(f"獲取美股新聞時出錯: {e}")
+        content += "<p>獲取美股新聞失敗</p>"
 
-    print(content)
+    print(content)  # 打印整個內容以便調試
     send_email(content)
 
 if __name__ == "__main__":

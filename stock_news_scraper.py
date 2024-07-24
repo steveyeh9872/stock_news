@@ -90,11 +90,11 @@ def get_us_news():
     
     try:
         response = requests.get(url, headers=headers)
-        response.raise_for_status()  # 如果請求不成功，這將引發異常
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # 嘗試不同的選擇器
-        news_items = soup.select('h3 > a')
+        # 更新選擇器以匹配提供的 HTML 結構
+        news_items = soup.select('div.content a.subtle-link')
         if not news_items:
             print("無法找到新聞項目。HTML結構:")
             print(soup.prettify()[:1000])  # 打印前1000個字符的HTML，用於調試
@@ -102,8 +102,8 @@ def get_us_news():
         
         news = []
         for item in news_items[:5]:  # 只獲取前5條新聞
-            title = item.text.strip()
-            link = item['href'] if item else ""
+            title = item['title']
+            link = item['href']
             if link and not link.startswith('http'):
                 link = "https://finance.yahoo.com" + link
             short_link = shorten_url(link)

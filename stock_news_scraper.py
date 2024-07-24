@@ -12,6 +12,13 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
+def shorten_url(url):
+    try:
+        response = requests.get(f"http://tinyurl.com/api-create.php?url={url}")
+        return response.text
+    except:
+        return url  # 如果縮短失敗，返回原始URL
+
 def get_tw_stock_info():
     url = "https://tw.stock.yahoo.com/quote/^TWII"
     headers = {
@@ -53,26 +60,33 @@ def get_tw_news():
     
     news = []
     for item in news_items:
-        title = item.find('h3').text
+        title = item.find('h3').text.strip()
         link = item.find('a')['href']
-        news.append(f"{title}\n{link}\n")
+        short_link = shorten_url(link)
+        news.append(f"{title}\n{short_link}\n")
     
-    return "\n".join(news)
+    return "\n".join(news) if news else "無法獲取台股新聞"
 
 def get_us_news():
     url = "https://finance.yahoo.com/news"
-    response = requests.get(url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
     news_items = soup.find_all('h3', {'class': 'Mb(5px)'})[:5]  # 獲取前5條新聞
     
     news = []
     for item in news_items:
-        title = item.text
-        link = "https://finance.yahoo.com" + item.find('a')['href']
-        news.append(f"{title}\n{link}\n")
+        title = item.text.strip()
+        link = item.find('a')['href']
+        if not link.startswith('http'):
+            link = "https://finance.yahoo.com" + link
+        short_link = shorten_url(link)
+        news.append(f"{title}\n{short_link}\n")
     
-    return "\n".join(news)
+    return "\n".join(news) if news else "無法獲取美股新聞"
 
 def send_email(content):
     message = MIMEMultipart()
@@ -87,25 +101,30 @@ def send_email(content):
         server.send_message(message)
 
 def main():
-    tw_info = get_tw_stock_info()
-    us_info = get_us_stock_info()
-    tw_news = get_tw_news()
-    us_news = get_us_news()
-    
-    content = f"""
-    今日股市資訊與新聞:
+    content = "今日股市資訊與新聞:\n\n"
 
-    {tw_info}
+    try:
+        content += get_tw_stock_info() + "\n\n"
+    except Exception as e:
+        content += f"獲取台股資訊時出錯: {str(e)}\n\n"
 
-    {us_info}
+    try:
+        content += get_us_stock_info() + "\n\n"
+    except Exception as e:
+        content += f"獲取美股資訊時出錯: {str(e)}\n\n"
 
-    台股熱門新聞:
-    {tw_news}
+    content += "台股熱門新聞:\n"
+    try:
+        content += get_tw_news() + "\n\n"
+    except Exception as e:
+        content += f"獲取台股新聞時出錯: {str(e)}\n\n"
 
-    美股熱門新聞:
-    {us_news}
-    """
-    
+    content += "美股熱門新聞:\n"
+    try:
+        content += get_us_news() + "\n\n"
+    except Exception as e:
+        content += f"獲取美股新聞時出錯: {str(e)}\n\n"
+
     print(content)
     send_email(content)
 

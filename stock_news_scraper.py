@@ -149,10 +149,15 @@ def send_notifications(content):
     # 發送郵件
     send_email(content)
     
-    # 準備 Line 消息，移除所有 HTML 標籤
-    line_message = re.sub(r'<.*?>', '', content)
-    line_message = line_message.replace('&nbsp;', ' ')
-
+    # 準備 Line 消息
+    line_message = content.replace('<strong>', '').replace('</strong>', '')
+    line_message = line_message.replace('<br>', '\n')
+    line_message = line_message.replace('<p>', '').replace('</p>', '\n')
+    line_message = line_message.replace('<h2>', '\n').replace('</h2>', '\n')
+    line_message = line_message.replace('<h3>', '\n').replace('</h3>', '\n')
+    line_message = re.sub(r'<span.*?>', '', line_message)
+    line_message = re.sub(r'</span>', '', line_message)
+    
     # 發送 Line 通知
     send_line_notify(line_message)
 

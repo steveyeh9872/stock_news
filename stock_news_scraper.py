@@ -6,6 +6,7 @@ import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+import re
 
 def shorten_url(url):
     try:
@@ -107,7 +108,10 @@ def send_line_notify(message):
     data = {'message': message}
     try:
         response = requests.post(line_notify_api, headers=headers, data=data)
-        print(f"Line Notify sent. Status code: {response.status_code}")
+        if response.status_code == 200:
+            print(f"Line Notify sent. Status code: {response.status_code}")
+        else:
+            print(f"Failed to send Line Notify. Status code: {response.status_code}, Response: {response.text}")
     except Exception as e:
         print(f"Error sending Line Notify: {e}")
 
@@ -145,13 +149,10 @@ def send_notifications(content):
     # 發送郵件
     send_email(content)
     
-    # 準備 Line 消息
-    line_message = content.replace('<strong>', '').replace('</strong>', '')
-    line_message = line_message.replace('<br>', '\n')
-    line_message = line_message.replace('<p>', '').replace('</p>', '\n')
-    line_message = line_message.replace('<h2>', '\n').replace('</h2>', '\n')
-    line_message = line_message.replace('<h3>', '\n').replace('</h3>', '\n')
-    
+    # 準備 Line 消息，移除所有 HTML 標籤
+    line_message = re.sub(r'<.*?>', '', content)
+    line_message = line_message.replace('&nbsp;', ' ')
+
     # 發送 Line 通知
     send_line_notify(line_message)
 

@@ -100,6 +100,17 @@ def get_us_news():
     
     return "\n".join(news) if news else "無法獲取美股新聞"
 
+def send_line_notify(message):
+    line_notify_token = os.environ['LINE_NOTIFY_TOKEN']
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': f'Bearer {line_notify_token}'}
+    data = {'message': message}
+    try:
+        response = requests.post(line_notify_api, headers=headers, data=data)
+        print(f"Line Notify sent. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error sending Line Notify: {e}")
+
 def send_email(content):
     sender_email = os.environ['SENDER_EMAIL']
     receiver_email = os.environ['RECEIVER_EMAIL']
@@ -129,6 +140,20 @@ def send_email(content):
         print("Email sent successfully")
     except Exception as e:
         print(f"Error sending email: {e}")
+
+def send_notifications(content):
+    # 發送郵件
+    send_email(content)
+    
+    # 準備 Line 消息
+    line_message = content.replace('<strong>', '').replace('</strong>', '')
+    line_message = line_message.replace('<br>', '\n')
+    line_message = line_message.replace('<p>', '').replace('</p>', '\n')
+    line_message = line_message.replace('<h2>', '\n').replace('</h2>', '\n')
+    line_message = line_message.replace('<h3>', '\n').replace('</h3>', '\n')
+    
+    # 發送 Line 通知
+    send_line_notify(line_message)
 
 def main():
     content = "<h2>今日股市資訊與新聞:</h2>"
@@ -164,7 +189,7 @@ def main():
         content += "<p>獲取美股新聞失敗</p>"
 
     print(content)  # 打印整個內容以便調試
-    send_email(content)
+    send_notifications(content)
 
 if __name__ == "__main__":
     main()

@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # 保留手動觸發選項
 
 jobs:
-  scrape-and-email:
+  scrape-and-notify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,9 +21,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run scraper
+      - name: Run scraper and send notifications
         env:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
         run: python stock_news_scraper.py

@@ -2,8 +2,8 @@ name: Daily Stock News
 
 on:
   schedule:
-    - cron: "0 1 * * *" # 每天 UTC 1:00 運行 (根據需要調整)
-  workflow_dispatch: # 允許手動觸發
+    - cron: "30 0 * * *" # 每天 UTC 0:30 運行，對應台灣時間 8:30
+  workflow_dispatch: # 保留手動觸發選項
 
 jobs:
   scrape-and-email:

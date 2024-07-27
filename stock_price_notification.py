@@ -23,22 +23,34 @@ stocks = ['00830.TW', '00662.TW', '00757.TW']
 
 def get_stock_info(symbol):
     stock = yf.Ticker(symbol)
-    info = stock.info
-    current_price = info['currentPrice']
-    high_price = info['fiftyTwoWeekHigh']
+    
+    # 獲取最新的股票數據
+    hist = stock.history(period="2d")
+    if hist.empty:
+        raise ValueError(f"無法獲取股票 {symbol} 的數據")
+    
+    current_price = hist['Close'].iloc[-1]
+    
+    # 獲取過去52週的數據
+    hist_52w = stock.history(period="52wk")
+    if hist_52w.empty:
+        raise ValueError(f"無法獲取股票 {symbol} 的52週數據")
+    
+    high_price = hist_52w['High'].max()
+    
     percentage = (current_price / high_price - 1) * 100
     return current_price, percentage
 
 message = "\n今日股票價格通知:\n\n"
 
 for stock in stocks:
-    price, percentage = get_stock_info(stock)
-    message += f"{stock}: 當前價格 {price:.2f}, 相對最高點 {percentage:.2f}%\n"
+    try:
+        price, percentage = get_stock_info(stock)
+        message += f"{stock}: 當前價格 {price:.2f}, 相對最高點 {percentage:.2f}%\n"
+    except Exception as e:
+        print(f"獲取股票 {stock} 數據時出錯: {e}")
+        message += f"{stock}: 無法獲取數據\n"
 
 # 發送 LINE 通知
+print(message) # 打印整個內容以便調試
 send_line_notify(message)
-
-# 輸出日誌
-tw_timezone = pytz.timezone('Asia/Taipei')
-current_time = datetime.now(tw_timezone).strftime("%Y-%m-%d %H:%M:%S")
-print(f"通知已發送 - {current_time}")

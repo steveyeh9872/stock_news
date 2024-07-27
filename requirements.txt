@@ -1,4 +1,4 @@
 requests
 beautifulsoup4
-yfinance
+yfinance==0.2.33
 pytz

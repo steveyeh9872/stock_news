@@ -26,16 +26,10 @@ def get_stock_info(symbol):
     
     # 獲取最新的股票數據
     hist = stock.history(period="2d")
-    if hist.empty:
-        raise ValueError(f"無法獲取股票 {symbol} 的數據")
-    
     current_price = hist['Close'].iloc[-1]
     
     # 獲取過去52週的數據
     hist_52w = stock.history(period="52wk")
-    if hist_52w.empty:
-        raise ValueError(f"無法獲取股票 {symbol} 的52週數據")
-    
     high_price = hist_52w['High'].max()
     
     percentage = (current_price / high_price - 1) * 100

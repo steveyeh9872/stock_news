@@ -1,6 +1,9 @@
 name: Stock Price Notification
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # 每天台灣時間 09:30 運行 (UTC+8)
     # 注意: GitHub Actions 使用 UTC 時間,所以需要調整

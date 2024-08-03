@@ -2,7 +2,6 @@ import yfinance as yf
 import requests
 import os
 from datetime import datetime
-import pytz
 
 def send_line_notify(message):
     line_notify_token = os.environ['LINE_NOTIFY_TOKEN']

@@ -1,4 +1,4 @@
-name: Stock Price Notification
+name: ETF Analysis
 
 on:
   schedule:
@@ -24,7 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run stock price notification script
+      - name: Run analysis
         env:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
-        run: python stock_price_notification.py
+        run: python etf_analysis.py

@@ -45,6 +45,26 @@
 
 通過 GitHub Actions 自動執行
 
+## ETF Price Analysis Notification
+
+### 說明
+
+抓取股票價格資訊，分析下降幅度與加碼量，並每日發送通知。
+
+### 執行檔案
+
+- `etf_analysis.yml`
+- `etf_analysis.py`
+
+### 設定
+
+1. 前往 GitHub 儲存庫的 Settings > Secrets
+2. 新增一個名為 `LINE_NOTIFY_TOKEN` 的 secret，值為您的 LINE Notify 權杖
+
+### 執行
+
+通過 GitHub Actions 自動執行
+
 ### 依賴套件
 
 所有必要的 Python 套件都列在 `requirements.txt` 文件中。GitHub Actions 將自動安裝這些套件。

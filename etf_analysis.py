@@ -75,7 +75,7 @@ def main():
         messages.append(message)
     
     # 發送Line通知
-    send_line_notify(messages)
+    send_line_notify('\n'.join(messages))
 
 if __name__ == "__main__":
     main()

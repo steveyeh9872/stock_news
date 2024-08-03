@@ -61,7 +61,7 @@ def main():
     for etf in etfs:
         result = analyze_etf(etf)
         
-        message = f"ETF: {result['symbol']}\n"
+        message = f"\nETF: {result['symbol']}\n"
         message += f"當前價格: {result['current_price']:.2f}\n"
         message += f"當前回撤: {result['current_drawdown']:.2%}\n"
         
@@ -75,7 +75,7 @@ def main():
         messages.append(message)
     
     # 發送Line通知
-    send_line_notify('\n\n'.join(messages))
+    send_line_notify(messages)
 
 if __name__ == "__main__":
     main()

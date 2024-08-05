@@ -4,7 +4,7 @@ on:
   schedule:
     # 每天台灣時間 09:30 運行 (UTC+8)
     # 注意: GitHub Actions 使用 UTC 時間,所以需要調整
-    - cron: "30 1 * * 1-5" # UTC 01:30 (台灣時間 9:30), 週一到週五
+    - cron: "0 1 * * 1-5" # UTC 01:00 (台灣時間 9:00), 週一到週五
   workflow_dispatch: # 保留手動觸發選項
 
 jobs:

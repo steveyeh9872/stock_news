@@ -2,7 +2,7 @@ name: Daily Stock News
 
 on:
   schedule:
-    - cron: "30 0 * * *" # UTC 0:30 (台灣時間 8:30)
+    - cron: "0 0 * * *" # UTC 0:00 (台灣時間 8:00)
   workflow_dispatch: # 保留手動觸發選項
 
 jobs:

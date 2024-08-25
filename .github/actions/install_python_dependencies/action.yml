@@ -1,6 +1,7 @@
 name: Install Python dependencies
 
 runs:
+  using: "composite"
   steps:
     - name: Set up Python
       uses: actions/setup-python@v5

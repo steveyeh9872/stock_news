@@ -44,9 +44,7 @@ def analyze_stock(symbol):
 
 def send_line_message(message):
     channel_access_token = os.environ['LINE_CHANNEL_ACCESS_TOKEN']
-    print(channel_access_token)
     user_id = os.environ['LINE_USER_ID']  # 你的LINE用戶ID
-    print(channel_access_token)
     url = 'https://api.line.me/v2/bot/message/push'
     
     headers = {
@@ -78,7 +76,7 @@ def main():
     for stock in stocks:
         result = analyze_stock(stock)
         
-        message = f"\n股票: {result['symbol']}\n"
+        message = f"股票: {result['symbol']}\n"
         message += f"當前價格: {result['current_price']:.2f}\n"
         message += f"當前回撤: {result['current_drawdown']:.2%}\n"
         
@@ -88,7 +86,7 @@ def main():
             message += "注意: 中度回撤, 考慮中幅加碼\n"
         elif result['current_drawdown'] <= result['light_drawdown']:
             message += "提示: 輕度回撤, 考慮小幅加碼\n"
-        
+        message += '\n'
         messages.append(message)
     
     # 發送Line訊息

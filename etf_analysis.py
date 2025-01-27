@@ -44,7 +44,9 @@ def analyze_stock(symbol):
 
 def send_line_message(message):
     channel_access_token = os.environ['LINE_CHANNEL_ACCESS_TOKEN']
+    print(channel_access_token)
     user_id = os.environ['LINE_USER_ID']  # 你的LINE用戶ID
+    print(channel_access_token)
     url = 'https://api.line.me/v2/bot/message/push'
     
     headers = {

@@ -3,12 +3,12 @@ import os
 from datetime import datetime, timedelta
 import requests
 
-# 定義ETF列表
-etfs = ['0050.TW', '00830.TW', '00662.TW', '00757.TW']
+# 定義股票列表
+stocks = ['NVDA', '2330.TW', 'MSFT', 'AMZN', 'NFLX', 'QQQ', 'VTI', 'SMH']
 
-def get_etf_data(symbol, period='5y'):
-    etf = yf.Ticker(symbol)
-    hist = etf.history(period=period)
+def get_stock_data(symbol, period='5y'):
+    stock = yf.Ticker(symbol)
+    hist = stock.history(period=period)
     return hist['Close']
 
 def calculate_drawdown(price):
@@ -16,8 +16,8 @@ def calculate_drawdown(price):
     drawdown = (price - peak) / peak
     return drawdown
 
-def analyze_etf(symbol):
-    prices = get_etf_data(symbol)
+def analyze_stock(symbol):
+    prices = get_stock_data(symbol)
     drawdown = calculate_drawdown(prices)
     
     # 計算歷史平均回撤和最大回撤
@@ -42,26 +42,41 @@ def analyze_etf(symbol):
         'heavy_drawdown': heavy_drawdown
     }
 
-def send_line_notify(message):
-    line_notify_token = os.environ['LINE_NOTIFY_TOKEN']
-    line_notify_api = 'https://notify-api.line.me/api/notify'
-    headers = {'Authorization': f'Bearer {line_notify_token}'}
-    data = {'message': message}
+def send_line_message(message):
+    channel_access_token = os.environ['LINE_CHANNEL_ACCESS_TOKEN']
+    user_id = os.environ['LINE_USER_ID']  # 你的LINE用戶ID
+    url = 'https://api.line.me/v2/bot/message/push'
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {channel_access_token}'
+    }
+    
+    data = {
+        'to': user_id,
+        'messages': [
+            {
+                'type': 'text',
+                'text': message
+            }
+        ]
+    }
+    
     try:
-        response = requests.post(line_notify_api, headers=headers, data=data)
+        response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
-            print(f"Line Notify sent. Status code: {response.status_code}")
+            print(f"Line message sent successfully. Status code: {response.status_code}")
         else:
-            print(f"Failed to send Line Notify. Status code: {response.status_code}, Response: {response.text}")
+            print(f"Failed to send Line message. Status code: {response.status_code}, Response: {response.text}")
     except Exception as e:
-        print(f"Error sending Line Notify: {e}")
+        print(f"Error sending Line message: {e}")
 
 def main():
     messages = []
-    for etf in etfs:
-        result = analyze_etf(etf)
+    for stock in stocks:
+        result = analyze_stock(stock)
         
-        message = f"\nETF: {result['symbol']}\n"
+        message = f"\n股票: {result['symbol']}\n"
         message += f"當前價格: {result['current_price']:.2f}\n"
         message += f"當前回撤: {result['current_drawdown']:.2%}\n"
         
@@ -74,8 +89,8 @@ def main():
         
         messages.append(message)
     
-    # 發送Line通知
-    send_line_notify(''.join(messages))
+    # 發送Line訊息
+    send_line_message(''.join(messages))
 
 if __name__ == "__main__":
     main()

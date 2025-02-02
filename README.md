@@ -55,10 +55,10 @@
 - 台積電 (2330.TW)
 - Microsoft (MSFT)
 - Amazon (AMZN)
-- Netflix (NFLX)
+- Tesla (TSLA)
 - QQQ
 - VTI
-- SMH
+- ASML
 
 ### 執行檔案
 

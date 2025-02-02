@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import requests
 
 # 定義股票列表
-stocks = ['NVDA', '2330.TW', 'MSFT', 'AMZN', 'NFLX', 'QQQ', 'VTI', 'SMH']
+stocks = ['NVDA', '2330.TW', 'MSFT', 'AMZN', 'TSLA', 'QQQ', 'VTI', 'ASML']
 
 def get_stock_data(symbol, period='5y'):
     stock = yf.Ticker(symbol)
